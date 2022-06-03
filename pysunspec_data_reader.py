@@ -32,8 +32,8 @@ for invert in inverter_list:
         measurements_df = pd.Series(measurements_Status).to_frame()
         file_name_inv = f"A_{port}_{current_time}"
         file_name_mrm= f"B_{port}_{current_time}"
-        inverter_df.to_csv (fr'C:\Users\hasan\Desktop\pysunspecDF\Datas\{file_name_inv}.csv', )
-        measurements_df.to_csv(fr'C:\Users\hasan\Desktop\pysunspecDF\Datas\{file_name_mrm}.csv')
+        inverter_df.to_csv (fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv', )
+        measurements_df.to_csv(fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_mrm}.csv')
         print(inverter_df)
         print("-------------------")
         print(measurements_df)
