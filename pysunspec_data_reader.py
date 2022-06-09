@@ -11,7 +11,7 @@ import dataFrames
 """
 - NOTLAR -
 
-ABB İNVERTERLERDE (ÖR/CENA) FAZ BAZINDA GÜÇ DEĞERİ GELMİYOR. AYRICA HESAPLANMALI
+ABB İNVERTERLERDE (ÖR/CENA) FAZ BAZINDA GÜÇ DEĞERİ GELMİYOR. AYRICA HESAPLANMALI.
 
 """
 inverter_list = secrets.inverter_list
@@ -105,4 +105,10 @@ for invert in inverter_list:
 
 print(compiledFrame)
 
-compiledFrame.to_csv (fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv',sep=";" , index=False)
+
+with open(fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv', 'w' , newline='') as fp:
+    fp.write('#INVERTERS\n')
+    compiledFrame.to_csv(fp, sep=";" ,index=False)
+    fp.write("#END")
+
+#compiledFrame.to_csv (fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv',sep=";" , index=False)
