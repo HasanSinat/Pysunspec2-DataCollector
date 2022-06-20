@@ -17,8 +17,7 @@ ABB İNVERTERLERDE (ÖR/CENA) FAZ BAZINDA GÜÇ DEĞERİ GELMİYOR. AYRICA HESAP
 inverter_list = secrets.inverter_list
 pd.get_option("display.max_columns")
 threePhaseInvDatas = ["AphA","AphB","AphC","PPVphAB","PPVphBC","PPVphCA","W","WH","Hz","VAr_SF","TmpSnk","TmpCab","St","Evt1","Evt2"]
-inventerIndicator = 1
-compiledFrame = pd.DataFrame()
+compiled_Inverter_Frame = pd.DataFrame()
 dt = datetime.datetime.now()
 ts = datetime.datetime.timestamp(dt)
 for invert in inverter_list:
@@ -41,36 +40,39 @@ for invert in inverter_list:
         measurements_Status = d.status[0]#Measurement status verilerini içeren model
         inverterInfo = d.common[0]
 
-        
-        #inverterJson= inverter.get_json() #json haline dönüşüm
-        inverterDict = inverter.get_dict() #Sözlük haliine dönüşüm
+        #Dataların sözlük halinde çekilemsi
+        inverterDict = inverter.get_dict() 
         mpptDict= mppt.get_dict()
-        mpptJson = mppt.get_json()
         inverterInfoDict = inverterInfo.get_dict()
         measurements_Status = measurements_Status.get_dict()
-        print(mpptJson)
         mpptDict = mpptDict["module"]
+
+        #Sözlük formatında çekilen dataların dataframeler haline getirilmesi
         mppt_df =pd.DataFrame(mpptDict).fillna(0)
-        inverter_df= pd.Series(inverterDict).to_frame()
+        inverter_df= pd.Series(inverterDict).to_frame().fillna(0)
         inverterInfo_df =pd.Series(inverterInfoDict).to_frame()
-        inverter_df= inverter_df.loc[threePhaseInvDatas].fillna(0)
-        measurements_df = pd.Series(measurements_Status).to_frame()
+        measurements_df = pd.Series(measurements_Status).to_frame().fillna(0)
+
+        #gelen dataların kendi dataframeimiz için tanımların datalara karşılık gelenlenlerinin ayıklanması
+        inverter_df= inverter_df.loc[threePhaseInvDatas]
+        
         file_name_inv = f"A_{port}_{current_time}"
         file_name_mrm= f"B_{port}_{current_time}"
         
-        measurements_df.to_csv(fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_mrm}.csv')
+        #measurements_df.to_csv(fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_mrm}.csv')
        
         inverterFrame = dataFrames.inverterFrame
         print(inverter_df)
-        print(inverterInfo_df)
-        print(mppt_df)
+        #print(inverterInfo_df)
+        #print(mppt_df)
 
+        #Toplam DC güç değeri gelmediğinden burda ayrıca hesaplatıyorum
         DcPSum = 0
         for i in range(6):
             DcPSum += mppt_df.iloc[i]["DCW"] 
 
 
-            #DC Data
+        #DC Data
         inverterFrame["DateTime"]=[ts]
         inverterFrame["InvID"]=[invert["InvID"]]
         inverterFrame["DC_U1"]=mppt_df.iloc[0]["DCV"]
@@ -92,8 +94,7 @@ for invert in inverter_list:
         inverterFrame["DC_I6"]=mppt_df.iloc[5]["DCA"]
         inverterFrame["DC_P6"]=mppt_df.iloc[5]["DCW"]
         inverterFrame["DC_PSum"]=DcPSum
-            #inverter Phase Data
-        #inverterFrame["AC_U1"]=inverterDict["PhVphA"]
+        #inverter Phase Data
         inverterFrame["AC_U1"]=inverter_df.loc["PPVphAB"]
         inverterFrame["AC_I1"]=inverter_df.loc["AphA"]
         #inverterFrame["AC_P1"]=inverter_df.loc["AphA"]
@@ -113,17 +114,17 @@ for invert in inverter_list:
         inverterFrame["Err1"]=inverter_df.loc["Evt1"]
         inverterFrame["Err2"]=inverter_df.loc["Evt2"]
 
-        compiledFrame = pd.concat([compiledFrame, inverterFrame], ignore_index=True)
-        compiledFrame.fillna(0, inplace=True)
+        compiled_Inverter_Frame = pd.concat([compiled_Inverter_Frame, inverterFrame], ignore_index=True)
+        compiled_Inverter_Frame.fillna(0, inplace=True)
         
-#compiledFrame.set_index("DateTime",inplace=True)   
+#compiled_Inverter_Frame.set_index("DateTime",inplace=True)   
 
-print(compiledFrame)
+print(compiled_Inverter_Frame)
 
-
+#CSV Formatına Dönüşüm
 with open(fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv', 'w' , newline='') as fp:
     fp.write('#INVERTERS\n')
-    compiledFrame.to_csv(fp, sep=";" ,index=False)
+    compiled_Inverter_Frame.to_csv(fp, sep=";" ,index=False)
     fp.write("#END")
 
-#compiledFrame.to_csv (fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv',sep=";" , index=False)
+#compiled_Inverter_Frame.to_csv (fr'C:\Users\hasan\Desktop\pysunspec2-datacollector\Datas\{file_name_inv}.csv',sep=";" , index=False)
